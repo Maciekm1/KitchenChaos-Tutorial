@@ -132,7 +132,11 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         isWalking = moveDir != Vector3.zero;
 
         float rotateSpeed = 10f;
-        transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
+
+        if (moveDir != Vector3.zero)
+        {
+            transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
+        }
     }
 
     private void setSelectedCounter(BaseCounter selectedCounter)

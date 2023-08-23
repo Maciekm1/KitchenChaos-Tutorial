@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,6 +36,17 @@ public class KitchenObject : MonoBehaviour
         kitchenObjectParent.ClearKitchenObject();
 
         Destroy(gameObject);
+    }
+
+    public Boolean TryGetPlate(out PlateKitchenObject plateKitchenObject)
+    {
+        if(this is PlateKitchenObject)
+        {
+            plateKitchenObject = this as PlateKitchenObject;
+            return true;
+        }
+        plateKitchenObject = null;
+        return false;
     }
 
     public IKitchenObjectParent GetKitchenObjectParent() { return kitchenObjectParent; }
