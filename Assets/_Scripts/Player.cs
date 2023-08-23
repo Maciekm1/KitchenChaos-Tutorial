@@ -7,7 +7,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 {
     public static Player Instance { get; private set; }
 
-    public event Action<ClearCounter> OnSelectedCounterChange;
+    public event Action<BaseCounter> OnSelectedCounterChange;
 
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private PlayerInput playerInput;
@@ -17,7 +17,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
     private bool isWalking;
     private Vector3 lastInteractDir;
-    private ClearCounter selectedCounter;
+    private BaseCounter selectedCounter;
     private KitchenObject kitchenObject;
 
     private void Awake()
@@ -32,6 +32,15 @@ public class Player : MonoBehaviour, IKitchenObjectParent
     private void Start()
     {
         playerInput.OnInteractAction += PlayerInput_OnInteractAction;
+        playerInput.OnInteractAlternateAction += PlayerInput_OnInteractAlternateAction;
+    }
+
+    private void PlayerInput_OnInteractAlternateAction()
+    {
+        if (selectedCounter != null)
+        {
+            selectedCounter.InteractAlternate(this);
+        }
     }
 
     private void PlayerInput_OnInteractAction()
@@ -66,11 +75,11 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         float interactDistance = 2f;
         if(Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, countersLayerMask))
         {
-            if(raycastHit.transform.TryGetComponent(out ClearCounter clearCounter))
+            if(raycastHit.transform.TryGetComponent(out BaseCounter baseCounter))
             {
-                if(clearCounter != selectedCounter)
+                if(baseCounter != selectedCounter)
                 {
-                    setSelectedCounter(clearCounter);
+                    setSelectedCounter(baseCounter);
                 }
             }
             else
@@ -97,7 +106,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         if (!canMove)
         {
             Vector3 moveDirX = new Vector3(moveDir.x, 0f, 0f).normalized;
-            canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirX, moveDistance);
+            canMove = moveDir.x != 0 && !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirX, moveDistance);
 
             if (canMove)
             {
@@ -106,7 +115,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
             else
             {
                 Vector3 moveDirZ = new Vector3(0f, 0f, moveDir.z).normalized;
-                canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirZ, moveDistance);
+                canMove = moveDir.z != 0 && !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirZ, moveDistance);
 
                 if (canMove)
                 {
@@ -126,7 +135,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
     }
 
-    private void setSelectedCounter(ClearCounter selectedCounter)
+    private void setSelectedCounter(BaseCounter selectedCounter)
     {
         this.selectedCounter = selectedCounter;
 
